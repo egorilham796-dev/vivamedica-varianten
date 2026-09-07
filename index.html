@@ -2506,6 +2506,12 @@ document.tidioChatCode = "rilznirdmtcr5v5sp8meptozk6f8f0x1";
 #vx-panel .vx-b.on { background: #10432D; border-color: #10432D; color: #fff; }
 #vx-panel .vx-b small { display: block; font-size: 11.5px; opacity: .62; margin-top: 1px; }
 #vx-panel .vx-b.on small { opacity: .78; }
+#vx-panel .vx-title {
+  margin: 0 0 10px; padding: 0 0 9px; border-bottom: 1px solid #eef2ee;
+}
+#vx-panel .vx-title strong { display: block; font-size: 14px; font-weight: 650; }
+#vx-panel .vx-title span { display: block; font-size: 11.5px; color: #5d6b62; margin-top: 3px; line-height: 1.35; }
+#vx-panel .vx-reset { margin-top: 8px; border-style: dashed; }
 #vx-panel .vx-note {
   font-size: 11.5px; color: #5d6b62; margin: 9px 0 0; padding-top: 9px;
   border-top: 1px solid #eef2ee; line-height: 1.4;
@@ -2520,8 +2526,12 @@ document.tidioChatCode = "rilznirdmtcr5v5sp8meptozk6f8f0x1";
 #vx-panel.vx-hid { display: none; }
 #vx-panel.vx-hid + #vx-toggle, #vx-toggle.vx-show { display: flex; }
 @media (max-width: 900px) {
-  #vx-panel { right: 10px; left: 10px; width: auto; top: 84px; max-height: 62vh; }
-  #vx-toggle { right: 10px; top: 84px; }
+  /* панель закрывала 59 % экрана телефона, и гость не видел саму страницу -
+     ужимаем до трети с прокруткой внутри (проверка 07.09) */
+  #vx-panel { right: 10px; left: 10px; width: auto; top: 78px; max-height: 38vh; padding: 10px 10px 12px; }
+  #vx-panel .vx-b { padding: 6px 9px; }
+  #vx-panel .vx-h { margin: 9px 0 5px; }
+  #vx-toggle { right: 10px; top: 78px; }
 }
 
 /* ---------- общий слой мотива ---------- */
@@ -2924,7 +2934,7 @@ body.vx-t-leiste #vx-leiste { display: flex; }
     { к: 'kette', de: 'Wirbelkette hinter dem Text', ru: 'Цепочка позвонков за текстом' },
     { к: 'raster', de: 'Wirbel-Raster', ru: 'Мелкие позвонки сеткой, как фактура' },
     { к: 'halb', de: 'Halber Wirbel am Rand', ru: 'Половина позвонка у кромки' },
-    { к: 'schimmer', de: 'Weicher Schimmer', ru: 'Мягкое сияние' }
+    { к: 'schimmer', de: 'Weicher Schimmer', ru: 'Мягкое сияние', def: true }
   ];
 
   function снятьМотив() {
@@ -3073,16 +3083,16 @@ body.vx-t-leiste #vx-leiste { display: flex; }
   var КНОПКИ_ПК = [
     { к: 'jetzt', de: 'Wie jetzt', ru: 'Как сейчас: только в первом экране' },
     { к: 'ersetzen', de: 'Statt «Team»-Button', ru: 'A. Вместо кнопки вакансий' },
-    { к: 'zwei', de: 'Zwei Buttons', ru: 'B. Две кнопки рядом' },
+    { к: 'zwei', de: 'Zwei Buttons', ru: 'B. Две кнопки рядом', def: true },
     { к: 'scroll', de: 'Erscheint beim Scrollen', ru: 'C. Появляется при прокрутке' }
   ];
   var КНОПКИ_МОБ = [
     { к: 'jetzt', de: 'Wie jetzt', ru: 'Как сейчас: только в первом экране' },
-    { к: 'rund', de: 'Runder Button im Kopf', ru: 'Круглый значок записи в шапке' },
+    { к: 'rund', de: 'Runder Button im Kopf', ru: 'Круглый значок записи в шапке', def: true },
     { к: 'leiste', de: 'Leiste unten', ru: 'Полоса внизу экрана' }
   ];
   /* выбор держится отдельно для компьютера и телефона - раскладки разные */
-  var СОСТ = { пк: 'jetzt', моб: 'jetzt' };
+  var СОСТ = { пк: 'zwei', моб: 'rund' };
 
   var сторожа = [];
 
@@ -3256,9 +3266,17 @@ body.vx-t-leiste #vx-leiste { display: flex; }
   function пульт() {
     var p = el('div', null, { id: 'vx-panel' });
 
+    var шапкаП = el('div', 'vx-title');
+    шапкаП.innerHTML = '<strong>Varianten zur Auswahl</strong>' +
+      '<span>Tippen Sie eine Zeile an - die Startseite ändert sich sofort.</span>';
+    p.appendChild(шапкаП);
+
     function группа(заголовок, список, имя, применить) {
       var h = el('div', 'vx-h'); h.textContent = заголовок; p.appendChild(h);
-      var текущий = выбор(имя, список[0].к);
+      /* при первом заходе показываем предложение, а не пустой экран:
+         иначе гость видел герой без мотива и шапку без кнопки (проверка 07.09) */
+        var поум = (список.filter(function (в) { return в.def; })[0] || список[0]).к;
+        var текущий = выбор(имя, поум);
       список.forEach(function (в) {
         var b = el('button', 'vx-b' + (в.к === текущий ? ' on' : ''), { type: 'button' });
         b.appendChild(document.createTextNode(в.de));
@@ -3289,6 +3307,16 @@ body.vx-t-leiste #vx-leiste { display: flex; }
       '<br><br>Компьютер и телефон выбираются отдельно: какая группа сработает, зависит от ширины окна. ' +
       'Ссылки уводят на настоящий сайт, на боевом ничего не меняется.';
     p.appendChild(n);
+
+    var сброс = el('button', 'vx-b vx-reset', { type: 'button' });
+    сброс.appendChild(document.createTextNode('Zurücksetzen'));
+    var rs = el('small'); rs.textContent = 'вернуть предложенное'; сброс.appendChild(rs);
+    сброс.addEventListener('click', function () {
+      try { localStorage.removeItem('vx-motiv'); localStorage.removeItem('vx-termin');
+            localStorage.removeItem('vx-termin_mob'); } catch (e) {}
+      location.reload();
+    });
+    p.appendChild(сброс);
 
     var t = el('button', null, { id: 'vx-toggle', type: 'button', title: 'Panel' });
     t.textContent = '☰';
