@@ -2741,6 +2741,25 @@ body.vx-t-leiste #vx-leiste { display: flex; }
     position: static !important; right: auto; left: auto;
     transform: none !important; gap: 0;
   }
+  /* «По четвертям, попиксельно» (слово владельца 07.09): space-between делил
+     остаток между блоками разной ширины и давал 48/47/48. Отдаём каждому из
+     четырёх ровно четверть ряда и центрируем внутри - центры встают строго
+     в 1/8, 3/8, 5/8, 7/8, промежутки между центрами одинаковые до пикселя. */
+  body.vx-t-rund .header-inner > [data-id="f91fcda"],
+  body.vx-t-rund .header-inner > [data-id="8c16cfd"],
+  body.vx-t-rund .header-inner > [data-id="329c577"],
+  body.vx-t-rund .header-inner > .vx-hdr-pair {
+    flex: 1 1 0 !important;
+    min-width: 0 !important;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+  }
+  body.vx-t-rund .header-inner > [data-id="f91fcda"] .elementor-icon-wrapper,
+  body.vx-t-rund .header-inner > [data-id="8c16cfd"] .elementor-icon-wrapper,
+  body.vx-t-rund .header-inner > [data-id="329c577"] .elementor-icon-wrapper {
+    display: flex; justify-content: center; width: 100%;
+  }
   .vx-hdr-pair [data-id="c80e8b0"] { display: none !important; }
   .vx-hdr-pair .vx-termin {
     width: 44px; height: 44px !important; padding: 0 !important;
