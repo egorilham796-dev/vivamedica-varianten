@@ -2731,14 +2731,30 @@ body.vx-t-ersetzen .vx-hdr-orig { display: none !important; }
    кнопка записи там налезала на бургер и на правую иконку (замер 07.09).
    Поэтому на узких экранах она уходит из шапки, а её работу берёт полоса внизу. */
 /* «Полоса внизу» как вариант - видна на любом экране */
-body.vx-t-leiste #vx-leiste { display: flex; }
+body.vx-t-leiste #vx-leiste,
+body.vx-t-oben #vx-leiste,
+body.vx-t-beides #vx-leiste { display: flex; }
+
+/* та же полоса, но под шапкой - выезжает сверху, а не снизу */
+#vx-leiste.vx-oben {
+  bottom: auto; transform: translateY(-140%);
+  padding: 8px 14px; border-top: 0; border-bottom: 1px solid #e3eae4;
+  box-shadow: 0 8px 26px -18px rgba(16,67,45,.5);
+}
+#vx-leiste.vx-oben.vx-vis { transform: none; }
 
 @media (max-width: 767px) {
-  .vx-hdr-pair { display: none !important; }
-  /* на телефоне полоса заменяет кнопку в шапке во всех остальных вариантах */
-  body.vx-t-ersetzen #vx-leiste,
-  body.vx-t-zwei #vx-leiste,
-  body.vx-t-scroll #vx-leiste { display: flex; }
+  /* В шапке телефона места на подпись нет (свободные окна ~94 px), но круглая
+     кнопка со значком туда садится - слово владельца 07.09. Чужая «Team» на
+     телефоне и так скрыта, поэтому в шапке остаётся только запись. */
+  .vx-hdr-pair { right: auto; gap: 0; }
+  .vx-hdr-pair [data-id="c80e8b0"] { display: none !important; }
+  .vx-hdr-pair .vx-termin {
+    width: 44px; height: 44px !important; padding: 0 !important;
+    justify-content: center; border-radius: 50%;
+  }
+  .vx-hdr-pair .vx-txt { display: none; }
+  .vx-hdr-pair .vx-termin svg { display: block; width: 20px; height: 20px; }
 }
 
 </style>
@@ -2944,13 +2960,24 @@ body.vx-t-leiste #vx-leiste { display: flex; }
 
   /* ------------------------------------------------------------ кнопка «Termin» */
 
-  var КНОПКИ = [
+  /* Раскладки компьютера и телефона не связаны: на широком экране речь про
+     кнопку рядом с чужой «Team», на узком - про место среди иконок шапки.
+     Поэтому две независимые группы, каждая со своим выбором (слово владельца 07.09). */
+  var КНОПКИ_ПК = [
     { к: 'jetzt', de: 'Wie jetzt', ru: 'Как сейчас: только в первом экране' },
     { к: 'ersetzen', de: 'Statt «Team»-Button', ru: 'A. Вместо кнопки вакансий' },
     { к: 'zwei', de: 'Zwei Buttons', ru: 'B. Две кнопки рядом' },
-    { к: 'scroll', de: 'Erscheint beim Scrollen', ru: 'C. Появляется при прокрутке' },
-    { к: 'leiste', de: 'Leiste unten (Handy)', ru: 'D. Полоса внизу экрана' }
+    { к: 'scroll', de: 'Erscheint beim Scrollen', ru: 'C. Появляется при прокрутке' }
   ];
+  var КНОПКИ_МОБ = [
+    { к: 'jetzt', de: 'Wie jetzt', ru: 'Как сейчас: только в первом экране' },
+    { к: 'rund', de: 'Runder Button im Kopf', ru: 'Круглый значок записи в шапке' },
+    { к: 'oben', de: 'Leiste oben, unter dem Kopf', ru: 'Полоса вверху, под шапкой' },
+    { к: 'leiste', de: 'Leiste unten', ru: 'Полоса внизу экрана' },
+    { к: 'beides', de: 'Button + Leiste unten', ru: 'И значок в шапке, и полоса внизу' }
+  ];
+  /* выбор держится отдельно для компьютера и телефона - раскладки разные */
+  var СОСТ = { пк: 'jetzt', моб: 'jetzt' };
 
   var сторожа = [];
 
@@ -3036,30 +3063,39 @@ body.vx-t-leiste #vx-leiste { display: flex; }
     сторожа.push(с);
   }
 
-  function ставитьКнопку(к) {
+  function ставитьКнопку() {
     снятьКнопку();
+    var телефон = innerWidth <= 767;
+    var к = телефон ? СОСТ.моб : СОСТ.пк;
     document.body.classList.add('vx-t-' + к);
     if (к === 'jetzt') return;
 
-    /* Полосу строим для любого варианта, кроме «как сейчас»: в «leiste» она и есть
-       вариант, в остальных - замена кнопке на телефоне, где в шапке места нет.
-       Кому её видно, решает css по ширине экрана. */
-    if (true) {
+    /* полоса внизу - мобильные варианты «leiste» и «beides» */
+    if (телефон && (к === 'leiste' || к === 'oben' || к === 'beides')) {
       var полоса = el('div', null, { id: 'vx-leiste' });
       var г1 = el('a', 'vx-l-haupt', { href: ССЫЛКА });
       г1.appendChild(иконкаКалендарь()); г1.appendChild(document.createTextNode('Termin buchen'));
       var г2 = el('a', 'vx-l-neben', { href: ТЕЛ_HREF });
       г2.appendChild(иконкаТелефон()); г2.appendChild(document.createTextNode('Anrufen'));
       полоса.appendChild(г1); полоса.appendChild(г2);
+      if (к === 'oben') {
+        /* та же полоса, но под шапкой: высоту шапки берём фактическую,
+           она разная на телефоне и планшете */
+        полоса.classList.add('vx-oben');
+        var шапка = document.querySelector('.elementor-location-header .header-sticky') ||
+                    document.querySelector('.elementor-location-header');
+        полоса.style.top = Math.round(шапка ? шапка.getBoundingClientRect().height : 78) + 'px';
+      }
       document.body.appendChild(полоса);
       следитьЗаГероем(
         function () { полоса.classList.add('vx-vis'); },
         function () { полоса.classList.remove('vx-vis'); }
       );
-      if (к === 'leiste') return;
+      if (к === 'leiste' || к === 'oben') return;
     }
 
-    /* остальные три варианта живут в шапке, рядом с кнопкой «Team» */
+    /* кнопка в шапке: на компьютере - рядом с чужой «Team», на телефоне - круглая
+       в свободном окне между иконками */
     var цели = шапочныеКнопки();
     if (!цели.length) return;
 
@@ -3068,7 +3104,6 @@ body.vx-t-leiste #vx-leiste { display: flex; }
       слот.appendChild(кнопкаЗаписи('Termin buchen'));
       if (к === 'scroll') слот.classList.add('vx-onscroll');
 
-      /* общий блок на месте чужой кнопки: наша зелёная слева, «Team» справа */
       var пара = el('div', 'vx-hdr-pair');
       виджет.parentNode.insertBefore(пара, виджет);
       пара.appendChild(слот);
@@ -3077,6 +3112,7 @@ body.vx-t-leiste #vx-leiste { display: flex; }
     });
 
     подогнать();
+    вОкноШапки();
 
     if (к === 'scroll') {
       следитьЗаГероем(
@@ -3086,10 +3122,47 @@ body.vx-t-leiste #vx-leiste { display: flex; }
     }
   }
 
+  /* На телефоне шапка - логотип и две иконки, между ними два окна примерно по 94 px.
+     Ставим круглую кнопку в самое широкое из них, а не к правой кромке: справа
+     иконка кончается в 15 px от края плашки, кнопка легла бы поверх неё. */
+  function вОкноШапки() {
+    var пара = document.querySelector('.vx-hdr-pair');
+    if (!пара) return;
+    if (innerWidth > 767) { пара.style.left = ''; пара.style.right = ''; return; }
+    var hdr = document.querySelector('.elementor-location-header');
+    var плашка = hdr && hdr.querySelector('.header-inner');
+    if (!плашка) return;
+    var pb = плашка.getBoundingClientRect();
+
+    var занято = qa('.elementor-widget', hdr).map(function (w) {
+      return w.getBoundingClientRect();
+    }).filter(function (r) {
+      return r.width > 0 && r.height > 0 && r.right > pb.left && r.left < pb.right;
+    }).sort(function (a, b) { return a.left - b.left; });
+
+    var окна = [], курсор = pb.left + 8;
+    занято.forEach(function (r) {
+      if (r.left - курсор > 0) окна.push({ от: курсор, до: r.left });
+      курсор = Math.max(курсор, r.right);
+    });
+    if (pb.right - 8 - курсор > 0) окна.push({ от: курсор, до: pb.right - 8 });
+
+    var лучшее = окна.sort(function (a, b) { return (b.до - b.от) - (a.до - a.от); })[0];
+    if (!лучшее || лучшее.до - лучшее.от < 50) return;   /* не влезает - оставляем как есть */
+    var центр = (лучшее.от + лучшее.до) / 2;
+    пара.style.left = Math.round(центр - 22 - pb.left) + 'px';
+    пара.style.right = 'auto';
+  }
+
   var подгонТаймер = null;
+  var былТелефон = innerWidth <= 767;
   addEventListener('resize', function () {
     clearTimeout(подгонТаймер);
-    подгонТаймер = setTimeout(function () { подогнать(); поТексту(); }, 180);
+    подгонТаймер = setTimeout(function () {
+      var телефонСейчас = innerWidth <= 767;
+      if (телефонСейчас !== былТелефон) { былТелефон = телефонСейчас; ставитьКнопку(); }
+      подогнать(); поТексту(); вОкноШапки();
+    }, 180);
   });
 
   /* ------------------------------------------------------------------ пульт */
@@ -3126,13 +3199,16 @@ body.vx-t-leiste #vx-leiste { display: flex; }
     }
 
     группа('Motiv im Startbereich / мотив в первом экране', МОТИВЫ, 'motiv', рисоватьМотив);
-    группа('Termin-Button / кнопка записи', КНОПКИ, 'termin', ставитьКнопку);
+    группа('Termin-Button am Computer / кнопка записи на компьютере', КНОПКИ_ПК, 'termin',
+      function (к) { СОСТ.пк = к; ставитьКнопку(); });
+    группа('Termin-Button am Handy / кнопка записи на телефоне', КНОПКИ_МОБ, 'termin_mob',
+      function (к) { СОСТ.моб = к; ставитьКнопку(); });
 
     var n = el('div', 'vx-note');
-    n.innerHTML = 'Die ersten drei Button-Varianten wirken nur am Computer - im Handy-Kopf ist kein Platz, ' +
-      'dort greift «Leiste unten». Links führen zur echten Website, am Live-Auftritt ändert sich nichts.' +
-      '<br><br>Первые три варианта кнопки работают только на компьютере: в шапке телефона места нет, ' +
-      'там смотри «Полосу внизу». Ссылки уводят на настоящий сайт, на боевом ничего не меняется.';
+    n.innerHTML = 'Computer und Handy werden getrennt gewählt - je nach Fensterbreite greift die eine ' +
+      'oder die andere Gruppe. Links führen zur echten Website, am Live-Auftritt ändert sich nichts.' +
+      '<br><br>Компьютер и телефон выбираются отдельно: какая группа сработает, зависит от ширины окна. ' +
+      'Ссылки уводят на настоящий сайт, на боевом ничего не меняется.';
     p.appendChild(n);
 
     var t = el('button', null, { id: 'vx-toggle', type: 'button', title: 'Panel' });
