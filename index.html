@@ -2614,6 +2614,101 @@ body.vx-m-ohne .vm-mist { display: none !important; }
 .vx-halb path { fill: #1E5033; opacity: .16; }
 @media (max-width: 767px) { .vx-halb { width: 26%; } }
 
+/* ---------- вертикаль в шапке ---------- */
+/* Замер 07.09 на 390: плашка 15-61 (46 px), логотип 16-60 с `align-self: flex-start`,
+   а бургер и значок команды - 19.5-63.5, то есть на 3,5 px ниже логотипа и на 2,5 px
+   ниже плашки. Виноваты отрицательные нижние отступы виджетов Elementor
+   (`0 0 -8px` у логотипа, `1px 0 -6px` у иконок): они сбивают центрирование.
+   Обнуляем их, ряд центрируем и чуть поднимаем высоту - владелец разрешил
+   расширить полосу, лишь бы всё стояло ровно. */
+.elementor-location-header .header-inner {
+  align-items: center !important;
+}
+.elementor-location-header .header-inner > [data-id],
+.elementor-location-header .header-inner > .vx-hdr-pair {
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+  align-self: center !important;
+}
+/* Сам значок внутри блока сидел на 2 px выше центра (замер: центр блока 44,
+   центр svg 42) - у обёрток Elementor свой line-height. Отсюда и «три линии
+   не посередине». Центрируем содержимое блока, а не только сам блок. */
+.elementor-location-header .header-inner > [data-id] .elementor-icon-wrapper,
+.elementor-location-header .header-inner > [data-id] .elementor-icon,
+.elementor-location-header .header-inner > [data-id] .elementor-widget-container {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  line-height: 0 !important;
+}
+.elementor-location-header .header-inner > [data-id] svg { display: block; }
+/* При прокрутке Elementor ужимает логотип трансформом (scale 0.76), ряд после
+   этого пересчитывается и четверти разъезжаются - логотип «то прижат, то нет».
+   Держим знак одного размера в обоих состояниях. */
+.elementor-location-header .header-inner > [data-id="f91fcda"] svg {
+  transform: none !important;
+}
+/* внутри блока логотипа ссылка при прокрутке получает свой отступ и уводит знак
+   на 2 px влево - обнуляем и центрируем знак самим блоком */
+/* Настоящая причина (нашлась только обходом всей цепочки): при прокрутке тема
+   вешает отступ на САМ знак - `margin: 4px 0 0 -4px`. Отсюда и уход на 2 px
+   вбок, и смещение по вертикали. Обнуляем на всех трёх уровнях. */
+.elementor-location-header .header-inner > [data-id="f91fcda"] a,
+.elementor-location-header .header-inner > [data-id="f91fcda"] .elementor-icon-wrapper,
+.elementor-location-header .header-inner > [data-id="f91fcda"] svg {
+  margin: 0 !important;
+  padding: 0 !important;
+}
+@media (max-width: 767px) {
+  .elementor-location-header .header-inner {
+    min-height: 56px;
+    padding-top: 6px !important;
+    padding-bottom: 6px !important;
+    /* при прокрутке Elementor добавляет свой боковой отступ и ужимает логотип -
+       четверти разъезжались (шаги 85,5 / 83,5 / 83,5) и значок уезжал на 2 px.
+       Держим отступы и размер знака одинаковыми в обоих состояниях. */
+    padding-left: 14px !important;
+    padding-right: 14px !important;
+  }
+  .elementor-location-header .header-inner > [data-id="f91fcda"] a {
+    width: 55px !important; height: 40px !important;
+    display: inline-flex !important; align-items: center !important; justify-content: center !important;
+  }
+  .elementor-location-header .header-inner > [data-id="f91fcda"] svg {
+    height: 40px !important;
+    width: 55px !important;
+  }
+}
+
+/* На компьютере логотип упирался в левую кромку плашки (замер 07.09: слева 1 px
+   против 12 px справа у кнопки) и занимал 45 px из 47 по высоте - оттого и
+   «прижат». Даём ему такое же поле слева, как у кнопки справа, и убавляем
+   высоту, чтобы сверху и снизу остался воздух. */
+@media (min-width: 768px) {
+  /* высоту плашки держал логотип: стоило его убавить - полоса схлопнулась
+     с 47 до 36 px и кнопки полезли наружу. Задаём её явно. */
+  .elementor-location-header .header-inner {
+    min-height: 56px;
+    padding-top: 6px !important;
+    padding-bottom: 6px !important;
+    /* при прокрутке Elementor сам добавляет плашке боковой отступ 15 px
+       (класс elementor-sticky--effects), и поле слева прыгало с 12 на 27.
+       Держим его одинаковым в обоих состояниях. */
+    padding-left: 11px !important;   /* у svg логотипа свой 1 px внутри - так поля выходят 12/12 */
+  }
+  /* при прокрутке тема ужимает ссылку логотипа (55,45 -> 51,45), знак остаётся -
+     центр уезжает и четверти разъезжаются. Держим оба размера жёстко;
+     пропорция знака 61:44, поэтому при высоте 34 ширина 47. */
+  .elementor-location-header .header-inner > [data-id="f91fcda"] a {
+    width: 47px !important; height: 34px !important;
+    display: inline-flex !important; align-items: center !important; justify-content: center !important;
+  }
+  .elementor-location-header .header-inner > [data-id="f91fcda"] svg {
+    height: 34px !important;
+    width: 47px !important;
+  }
+}
+
 /* ---------- кнопка записи ---------- */
 
 /* общий вид нашей зелёной кнопки - снят с геройской: 100px радиус, #10432D, белый, 16/600 */
