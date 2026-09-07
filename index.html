@@ -2874,6 +2874,15 @@ body.vx-t-leiste #vx-leiste { display: flex; }
   .vx-hdr-pair .vx-termin svg { display: block; width: 20px; height: 20px; }
 }
 
+/* ---------- чужое, что мешает смотреть варианты ---------- */
+/* Стенд - показ оформления, а не проверка чата и согласия на печенья.
+   У гостя на телефоне чат Tidio разворачивался сам и забирал пол-экрана,
+   снизу висел баннер cookie - самой страницы почти не оставалось (кадр 07.09).
+   На живом сайте оба на месте, здесь просто не мешают смотреть. */
+#tidio-chat,
+.cky-consent-container,
+.cky-overlay { display: none !important; }
+
 </style>
 <script id="vx-js">
 /* Стенд выбора вариантов для VivaMedica.
