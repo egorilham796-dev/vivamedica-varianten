@@ -2397,6 +2397,7 @@ document.addEventListener('DOMContentLoaded', () => {
 				} )();
 			</script>
 			<link rel='stylesheet' id='elementor-post-7018-css' href='https://cryptotest.01g.info/wp-content/uploads/elementor/css/post-7018.css?ver=1788534355' media='all' />
+<link rel='stylesheet' id='e-popup-css' href='https://cryptotest.01g.info/wp-content/plugins/pro-elements/assets/css/conditionals/popup.min.css?ver=3.35.0' media='all' />
 <script id="angie-canvas-template-js-before">
 angieCanvasTemplateData = {"templateSlug":"angie-canvas"};
 //# sourceURL=angie-canvas-template-js-before
@@ -2922,6 +2923,34 @@ body.vx-z-strich .vx-zagtitel::before {
   width: 3px; border-radius: 3px; background: #8ED0AC;
 }
 
+/* ---------- блок «Stärken» ---------- */
+/* Замер 08.09 на 1280: карточка 280 px, внутри между значком и заголовком пустует
+   64 px; между верхней и нижней карточкой в колонке - ещё 83 px. Обе дыры клиника
+   и обвела. Ниже - способы их закрыть, каждый отдельным тумблером. */
+
+/* Пустоту внутри карточки даёт не значок, а `margin-top: 64px` у её заголовка
+   (замер 08.09; первая попытка правила добавила свой отступ сверху и щель выросла
+   с 64 до 78 - правка была не по адресу). Режем именно этот отступ. */
+/* `:first-of-type` здесь не работает: он считает среди div-ов, а первый div в
+   карточке - значок, не заголовок. Режем отступ у обоих заголовков и добавляем
+   воздух под значком - выходит 16 px вместо 64. */
+body.vx-s-eng .vx-karte > [data-widget_type="heading.default"],
+body.vx-s-beides .vx-karte > [data-widget_type="heading.default"],
+body.vx-s-eng .vx-karte > [data-widget_type="icon.default"],
+body.vx-s-beides .vx-karte > [data-widget_type="icon.default"],
+body.vx-s-eng .vx-karte,
+body.vx-s-beides .vx-karte,
+
+/* карточки занимают колонку целиком - промежуток между ними исчезает */
+body.vx-s-voll .vx-karte,
+body.vx-s-beides .vx-karte {
+  height: auto !important;
+  flex: 1 1 auto !important;
+}
+
+/* весь блок компактнее: убираем лишнюю высоту у секции */
+
+
 </style>
 <script id="vx-js">
 /* Стенд выбора вариантов для VivaMedica.
@@ -3157,6 +3186,38 @@ body.vx-z-strich .vx-zagtitel::before {
     { к: 'strich', de: 'Strich links am Titel', ru: 'Черта слева от заголовка' }
   ];
 
+  /* ------------------------------------------- блок «Stärken» */
+  /* Замер 08.09 (1280): карточка 280 высотой, внутри между значком и заголовком
+     пустует 64 px, а между верхней и нижней карточкой в колонке - ещё 83 px.
+     Это и обвела клиника как «много места». */
+  var STAERKEN = [
+    { к: 'jetzt', de: 'Wie jetzt', ru: 'Как сейчас' },
+    { к: 'eng', de: 'Text näher am Symbol', ru: 'Подтянуть текст к значку', def: true },
+    { к: 'voll', de: 'Karten füllen die Spalte', ru: 'Карточки на всю высоту колонки' },
+    { к: 'beides', de: 'Beides zusammen', ru: 'И то, и другое - обе дыры закрыты', def: true }
+  ];
+
+  function секцияStaerken() {
+    var заг = null;
+    qa('h1, h2, h3, .elementor-heading-title').forEach(function (h) {
+      if (!заг && /Stärken/i.test(h.textContent || '')) заг = h;
+    });
+    return заг && (заг.closest('.e-con.e-parent') || заг.closest('section'));
+  }
+
+  function ставитьStaerken(к) {
+    document.body.className = document.body.className.replace(/\bvx-s-\S+/g, '').trim();
+    document.body.classList.add('vx-s-' + к);
+    var сек = секцияStaerken();
+    if (!сек) return;
+    сек.classList.add('vx-staerken');
+    /* белые карточки внутри секции метим отдельно - правила цепляют только их */
+    qa('.e-con', сек).forEach(function (e) {
+      if (getComputedStyle(e).backgroundColor === 'rgb(255, 255, 255)' &&
+          e.getBoundingClientRect().width > 200) e.classList.add('vx-karte');
+    });
+  }
+
   function ставитьЗаголовок(к) {
     document.body.className = document.body.className.replace(/\bvx-z-\S+/g, '').trim();
     document.body.classList.add('vx-z-' + к);
@@ -3374,6 +3435,7 @@ body.vx-z-strich .vx-zagtitel::before {
       function (к) { СОСТ.моб = к; ставитьКнопку(); });
     группа('Überschrift im dunklen Block / заголовок тёмного блока', ЗАГОЛОВОК, 'zagtitel',
       ставитьЗаголовок);
+    группа('Block «Stärken» / блок сильных сторон', STAERKEN, 'staerken', ставитьStaerken);
 
     var n = el('div', 'vx-note');
     n.innerHTML = 'Computer und Handy werden getrennt gewählt - je nach Fensterbreite greift die eine ' +
@@ -3408,6 +3470,8 @@ body.vx-z-strich .vx-zagtitel::before {
   }
 
   function перепометить() {
+    var текущийS = (document.body.className.match(/vx-s-(\S+)/) || [])[1];
+    if (текущийS) ставитьStaerken(текущийS);
     var hl = document.querySelector('.vm-zag-hl');
     var заг = hl && hl.closest('.elementor-heading-title, h1, h2, h3');
     if (заг) заг.classList.add('vx-zagtitel');
